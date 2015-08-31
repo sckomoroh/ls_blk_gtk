@@ -58,6 +58,8 @@ void MainWindow::initTreeWidget (GtkWidget* pLayout)
 	createAndFillStore();
 	
 	GtkWidget* pTreeView;
+	GtkWidget* pScrolledWindow;
+		
 	GtkTreeViewColumn*  pColumnDevName;
 	GtkTreeViewColumn*  pColumnFsType;
 	GtkTreeViewColumn*  pColumnMountPoint;
@@ -115,8 +117,11 @@ void MainWindow::initTreeWidget (GtkWidget* pLayout)
 
 	gtk_widget_set_vexpand (GTK_WIDGET(pTreeView), TRUE);
 	gtk_widget_set_hexpand (GTK_WIDGET(pTreeView), TRUE);
-	
-	gtk_container_add (GTK_CONTAINER(pLayout), pTreeView);
+
+	pScrolledWindow = gtk_scrolled_window_new (NULL, NULL);
+
+	gtk_container_add (GTK_CONTAINER(pScrolledWindow), pTreeView);
+	gtk_container_add (GTK_CONTAINER(pLayout), pScrolledWindow);
 }
 
 void MainWindow::createAndFillStore()

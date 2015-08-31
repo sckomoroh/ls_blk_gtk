@@ -24,16 +24,6 @@ int sd_filter (const struct dirent * entry)
 	return 1;
 }
 
-int len_filter (const struct dirent * entry)
-{
-	if (strlen(entry->d_name) < 3)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
 PartitionsProvider::~PartitionsProvider()
 {
 	_clean();
@@ -68,20 +58,10 @@ void PartitionsProvider::_enumerateDisksAndPartitions()
 		char sdFolder[256] = { 0 };
 		sprintf(sdFolder, "/sys/block/%s", fileListTemp[i]->d_name);
 
-		char sdHoldersFolder[256] = { 0 };
-		sprintf(sdHoldersFolder, "/sys/block/%s/holders", fileListTemp[i]->d_name);
-		struct dirent **fileListTemp4;
-		int num4 = scandir(sdHoldersFolder, &fileListTemp4, len_filter, alphasort);
-		for (int l = 0; l<num4; l++)
-		{
-				PtrPartitionInfo ptrInfo4 = new PartitionInfo;
-				ptrInfo4->deviceName = fileListTemp4[l]->d_name;
-				ptrInfo4->ptrSlave = ptrInfo;
-
-				ptrInfo->holders.push_back(ptrInfo4);	
-		}
+		_enumerateHolders(sdFolder, ptrInfo);
 		
 		struct dirent **fileListTemp2;
+		printf("Scanning folder: '%s'\n", sdFolder);
 		int num2 = scandir(sdFolder, &fileListTemp2, sd_filter, alphasort);
 		for (int j=0; j<num2; j++)
 		{
@@ -91,19 +71,32 @@ void PartitionsProvider::_enumerateDisksAndPartitions()
 			ptrInfo->holders.push_back(ptrInfo2);
 			
 			char holdersFolder[256] = { 0 };
-			sprintf(holdersFolder, "%s/%s/holders", sdFolder, fileListTemp2[j]->d_name);
+			sprintf(holdersFolder, "%s/%s", sdFolder, fileListTemp2[j]->d_name);
 
-			struct dirent **fileListTemp3;
-			int num3 = scandir(holdersFolder, &fileListTemp3, len_filter, alphasort);
-			for (int k=0; k<num3; k++)
-			{
-				PtrPartitionInfo ptrInfo3 = new PartitionInfo;
-				ptrInfo3->deviceName = fileListTemp3[k]->d_name;
-				ptrInfo3->ptrSlave = ptrInfo2;
-
-				ptrInfo2->holders.push_back(ptrInfo3);
-			}
+			_enumerateHolders(holdersFolder, ptrInfo2);
 		}
+	}
+}
+
+void PartitionsProvider::_enumerateHolders (const char* folderName, PtrPartitionInfo parent)
+{
+	char holdersFolder[256] = { 0 };
+	sprintf(holdersFolder, "%s/holders", folderName);
+
+	struct dirent **fileListTemp3;
+	printf("Scanning holder folder: '%s' for '%s'\n", holdersFolder, folderName);
+	int num3 = scandir(holdersFolder, &fileListTemp3, NULL, alphasort);
+	for (int k=2; k<num3; k++)
+	{
+		PtrPartitionInfo ptrInfo3 = new PartitionInfo;
+		ptrInfo3->deviceName = fileListTemp3[k]->d_name;
+		ptrInfo3->ptrSlave = parent;
+
+		parent->holders.push_back(ptrInfo3);
+
+		char holderFolder[256] = { 0 };
+		sprintf(holderFolder, "/sys/block/%s", fileListTemp3[k]->d_name);
+		_enumerateHolders (holderFolder, ptrInfo3);
 	}
 }
 
@@ -153,8 +146,7 @@ void PartitionsProvider::_enumerateDevices()
 
 					if (szDeviceMap != NULL)
 					{
-						data->mappedTo = "/dev/mapper/";
-						data->mappedTo += szDeviceMap;
+						data->mappedTo = szDeviceMap;
 					}
 				}
 			}

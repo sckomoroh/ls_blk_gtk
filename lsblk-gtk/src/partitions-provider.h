@@ -30,6 +30,8 @@ private:
 	void _enumerateDisksAndPartitions();
 	void _enumerateDevices();
 	void _enumeratePartitions();
+
+	void _enumerateHolders(const char* folderName, PtrPartitionInfo parent);
 	
 	std::list<PtrPartitionInfo> _findByDeviceName(std::list<PtrPartitionInfo> partitions, std::string deviceName);
 	std::list<PtrPartitionInfo> _findByFullDeviceName(std::list<PtrPartitionInfo> partitions, std::string fullDeviceName);

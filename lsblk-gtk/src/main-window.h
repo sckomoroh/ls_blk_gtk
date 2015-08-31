@@ -25,12 +25,12 @@ private:
 	void createAndFillStore();
 
 	void addTreeNodes(std::list<PtrPartitionInfo> partitions, GtkTreeIter* parent);
-
+	
 	// Handlers
 	static void closeWindowHandler ();
-	static void refreshClickHandler (GtkWidget* pWidget, gpointer data);
+	static void refreshClickHandler(GtkWidget* sender, gpointer* data);
 
-	// actions
+	// Actions
 	void refreshAction();
 };
 

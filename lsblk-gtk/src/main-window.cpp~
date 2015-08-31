@@ -47,17 +47,17 @@ void MainWindow::initWindow()
                  NULL);
 
 	g_signal_connect(pRefreshButton,
-	                 "clicked",
-	                 G_CALLBACK(MainWindow::refreshClickHandler),
-	                 NULL);
+             "clicked",
+             G_CALLBACK(MainWindow::refreshClickHandler),
+             NULL);
+
 }
 
 void MainWindow::initTreeWidget (GtkWidget* pLayout)
 {
 	createAndFillStore();
 	
-	GtkWidget*			pTreeView;
-	GtkWidget*			pScrolledWindow;
+	GtkWidget* pTreeView;
 	GtkTreeViewColumn*  pColumnDevName;
 	GtkTreeViewColumn*  pColumnFsType;
 	GtkTreeViewColumn*  pColumnMountPoint;
@@ -115,11 +115,8 @@ void MainWindow::initTreeWidget (GtkWidget* pLayout)
 
 	gtk_widget_set_vexpand (GTK_WIDGET(pTreeView), TRUE);
 	gtk_widget_set_hexpand (GTK_WIDGET(pTreeView), TRUE);
-
-	pScrolledWindow = gtk_scrolled_window_new (NULL, NULL);
-
-	gtk_container_add (GTK_CONTAINER(pScrolledWindow), pTreeView);
-	gtk_container_add (GTK_CONTAINER(pLayout), pScrolledWindow);
+	
+	gtk_container_add (GTK_CONTAINER(pLayout), pTreeView);
 }
 
 void MainWindow::createAndFillStore()
@@ -147,7 +144,7 @@ void MainWindow::addTreeNodes(std::list<PtrPartitionInfo> partitions, GtkTreeIte
 		std::string deviceNameFull = data->deviceName;
 		if (data->mappedTo.length() > 0)
 		{
-			deviceNameFull += " (" + data->mappedTo + ")"; 
+			deviceNameFull += "(" + data->mappedTo + ")"; 
 		}
 		
 		gtk_tree_store_append (m_pTreeStore, &treeIter, parent);
@@ -170,7 +167,7 @@ void MainWindow::closeWindowHandler ()
 	gtk_main_quit ();
 }
 
-void MainWindow::refreshClickHandler (GtkWidget* pWidget, gpointer data)
+void MainWindow::refreshClickHandler(GtkWidget* sender, gpointer* data)
 {
 	MainWindow* pThis = (MainWindow*)data;
 	pThis->refreshAction ();
@@ -179,9 +176,6 @@ void MainWindow::refreshClickHandler (GtkWidget* pWidget, gpointer data)
 void MainWindow::refreshAction ()
 {
 	gtk_tree_store_clear (m_pTreeStore);
-	
-	GtkTreeIter   iter;
-	int i;
 
 	PartitionsProvider partProvider;
 	partProvider.init ();
